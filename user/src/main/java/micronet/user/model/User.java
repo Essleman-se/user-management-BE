@@ -2,6 +2,8 @@ package micronet.user.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "USERS")
 public class User {
@@ -26,6 +28,19 @@ public class User {
     
     @Column(nullable = false, length = 20)
     private String role = "USER"; // Default role is USER
+    
+    @Column(nullable = false, length = 20)
+    private String status = "PENDING"; // Default status is PENDING (PENDING, ACTIVE, SUSPENDED)
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 
     // Constructors
     public User() {
@@ -104,6 +119,22 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }
 

@@ -75,6 +75,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
             user.setSex("Unknown"); // Default sex
             user.setPassword(passwordEncoder.encode("OAUTH2_USER_" + System.currentTimeMillis())); // Random password
             user.setRole("USER"); // Default role
+            user.setStatus("ACTIVE"); // OAuth2 users are automatically verified (email verified by provider)
             user = userRepository.save(user);
             // Flush to ensure the user is persisted immediately
             userRepository.flush();

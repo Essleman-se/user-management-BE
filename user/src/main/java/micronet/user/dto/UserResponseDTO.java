@@ -6,6 +6,8 @@ public class UserResponseDTO {
     private Integer age;
     private String sex;
     private String email;
+    
+    private String status;
 
     // Constructors
     public UserResponseDTO() {
@@ -58,5 +60,13 @@ public class UserResponseDTO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

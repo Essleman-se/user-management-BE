@@ -37,6 +37,7 @@ public class DataInitializer {
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
         user.setRole(role);
+        user.setStatus("ACTIVE"); // Set seed users to ACTIVE for testing purposes
         return user;
     }
 }
