@@ -27,7 +27,6 @@ public class LoginController {
                 %s
                 <p>Choose a provider:</p>
                 <a href="/oauth2/authorization/google">Login with Google</a><br/><br/>
-                <a href="/oauth2/authorization/github">Login with GitHub</a><br/><br/>
                 <a href="/oauth2/login">OAuth2 Login Page</a>
             </body>
             </html>

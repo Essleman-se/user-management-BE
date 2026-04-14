@@ -29,8 +29,7 @@ public class OAuth2Controller {
             <body>
                 <h2>OAuth2 Login</h2>
                 <p>Choose a provider:</p>
-                <a href="/oauth2/authorization/google">Login with Google</a><br/><br/>
-                <a href="/oauth2/authorization/github">Login with GitHub</a>
+                <a href="/oauth2/authorization/google">Login with Google</a>
             </body>
             </html>
             """);

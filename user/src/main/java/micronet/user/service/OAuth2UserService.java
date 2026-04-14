@@ -1,7 +1,6 @@
 package micronet.user.service;
 
 import micronet.user.model.User;
-import micronet.user.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,13 +9,11 @@ import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserServ
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class OAuth2UserService extends DefaultOAuth2UserService {
@@ -24,10 +21,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
     private static final Logger logger = LoggerFactory.getLogger(OAuth2UserService.class);
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private OAuth2AccountService oAuth2AccountService;
 
     @Override
     @Transactional
@@ -59,33 +53,15 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
                 ", Available keys: " + attributes.keySet() + 
                 ", All attributes: " + attributes);
         }
+
+        // Persist in a new transaction so the row is committed before the success handler runs
+        User user = oAuth2AccountService.upsertGoogleUser(email, name);
         
-        // Check if user exists, if not create new user
-        Optional<User> userOptional = userRepository.findByEmail(email);
-        User user;
-        
-        if (userOptional.isPresent()) {
-            user = userOptional.get();
-        } else {
-            // Create new user from OAuth2
-            user = new User();
-            user.setEmail(email);
-            user.setName(name != null ? name : "OAuth2 User");
-            user.setAge(25); // Default age
-            user.setSex("Unknown"); // Default sex
-            user.setPassword(passwordEncoder.encode("OAUTH2_USER_" + System.currentTimeMillis())); // Random password
-            user.setRole("USER"); // Default role
-            user.setStatus("ACTIVE"); // OAuth2 users are automatically verified (email verified by provider)
-            user = userRepository.save(user);
-            // Flush to ensure the user is persisted immediately
-            userRepository.flush();
-        }
-        
-        // Return OAuth2User with authorities
+        // Return OAuth2User with authorities (use persisted email so it matches DB)
         return new CustomOAuth2User(
                 oAuth2User.getAttributes(),
                 oAuth2User.getAuthorities(),
-                email,
+                user.getEmail(),
                 user.getRole()
         );
     }
@@ -118,17 +94,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
                     "Make sure 'email' scope is requested and user has granted access."
                 );
             }
-            return email;
-        } else if ("github".equals(registrationId)) {
-            String email = (String) attributes.get("email");
-            if (email == null || email.isEmpty()) {
-                // GitHub might not return email in public profile
-                Object login = attributes.get("login");
-                if (login != null) {
-                    return login + "@github.com";
-                }
-            }
-            return email;
+            return email.trim().toLowerCase();
         }
         
         // Default: try email field
@@ -136,7 +102,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         if (email == null || email.isEmpty()) {
             throw new OAuth2AuthenticationException("Email not found in OAuth2 attributes: " + attributes.keySet());
         }
-        return email;
+        return email.trim().toLowerCase();
     }
 
     private String extractName(OAuth2User oAuth2User, String registrationId) {
@@ -144,12 +110,6 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         
         if ("google".equals(registrationId)) {
             return (String) attributes.get("name");
-        } else if ("github".equals(registrationId)) {
-            String name = (String) attributes.get("name");
-            if (name == null || name.isEmpty()) {
-                return (String) attributes.get("login");
-            }
-            return name;
         }
         
         return (String) attributes.get("name");

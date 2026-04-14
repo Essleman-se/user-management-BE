@@ -3,6 +3,7 @@ package micronet.user.controller;
 import micronet.user.dto.AuthResponseDTO;
 import micronet.user.dto.ErrorResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -21,6 +22,9 @@ public class OAuth2ReactController {
     @Autowired
     private ClientRegistrationRepository clientRegistrationRepository;
 
+    @Value("${app.frontend.url:https://essleman-se.github.io/user-management-UI}")
+    private String frontendBaseUrl;
+
     /**
      * GET /api/oauth2/authorization-url/{provider}
      * Returns the OAuth2 authorization URL for the specified provider
@@ -38,7 +42,7 @@ public class OAuth2ReactController {
             if (registration == null) {
                 Map<String, String> error = new HashMap<>();
                 error.put("error", "Provider not found");
-                error.put("message", "Supported providers: google, github");
+                error.put("message", "Supported providers: google");
                 return ResponseEntity.badRequest().body(error);
             }
 
@@ -69,8 +73,6 @@ public class OAuth2ReactController {
         Map<String, Object> providers = new HashMap<>();
         
         ClientRegistration google = clientRegistrationRepository.findByRegistrationId("google");
-        ClientRegistration github = clientRegistrationRepository.findByRegistrationId("github");
-        
         if (google != null) {
             Map<String, String> googleInfo = new HashMap<>();
             googleInfo.put("name", "Google");
@@ -78,15 +80,7 @@ public class OAuth2ReactController {
             googleInfo.put("authorizationUrl", "/api/oauth2/authorization-url/google");
             providers.put("google", googleInfo);
         }
-        
-        if (github != null) {
-            Map<String, String> githubInfo = new HashMap<>();
-            githubInfo.put("name", "GitHub");
-            githubInfo.put("registrationId", "github");
-            githubInfo.put("authorizationUrl", "/api/oauth2/authorization-url/github");
-            providers.put("github", githubInfo);
-        }
-        
+
         return ResponseEntity.ok(providers);
     }
 
@@ -102,10 +96,13 @@ public class OAuth2ReactController {
             @RequestParam String email,
             @RequestParam(required = false) String role) {
         
-        // Build the React frontend callback URL with token and email
+        // Build frontend callback URL from configuration (local/prod)
+        String callbackBase = frontendBaseUrl.endsWith("/")
+                ? frontendBaseUrl + "oauth2/callback"
+                : frontendBaseUrl + "/oauth2/callback";
+
         String frontendUrl = UriComponentsBuilder
-                //.fromUriString("http://localhost:5173/oauth2/callback")
-                .fromUriString("https://essleman-se.github.io/user-management-UI/oauth2/callback")
+                .fromUriString(callbackBase)
                 .queryParam("token", token)
                 .queryParam("email", email)
                 .queryParamIfPresent("role", java.util.Optional.ofNullable(role))

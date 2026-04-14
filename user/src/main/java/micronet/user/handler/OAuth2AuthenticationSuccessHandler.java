@@ -53,26 +53,24 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             logger.info("OAuth2User getName(): {}", oAuth2User.getName());
             logger.info("OAuth2User email attribute: {}", attributes.get("email"));
             
-            // Extract email from attributes (more reliable than getName())
+            // Extract email from attributes, fallback to principal name (CustomOAuth2User uses email as name).
+            // Do NOT use "sub" as email because it's provider user id, not an email.
             String email = (String) attributes.get("email");
             if (email == null || email.isEmpty()) {
-                // Try alternative fields for Google
-                email = (String) attributes.get("sub");
-                logger.info("Tried 'sub' attribute, got: {}", email);
-                if (email == null || email.isEmpty()) {
-                    // Try getName() as fallback
-                    email = oAuth2User.getName();
-                    logger.info("Tried getName() as fallback, got: {}", email);
-                }
+                email = oAuth2User.getName();
+                logger.info("Tried getName() as fallback, got: {}", email);
             }
-            
+            if (email != null) {
+                email = email.trim().toLowerCase();
+            }
+
             logger.info("Final extracted email: {}", email);
             
             // Validate email
-            if (email == null || email.isEmpty()) {
+            if (email == null || email.isEmpty() || !email.contains("@")) {
                 logger.error("Email is null or empty! Available attributes: {}", attributes.keySet());
                 String errorUrl = UriComponentsBuilder.fromUriString("/oauth2/error")
-                        .queryParam("message", "Email not found in OAuth2 authentication. Available attributes: " + attributes.keySet())
+                        .queryParam("message", "Valid email not found in OAuth2 authentication. Available attributes: " + attributes.keySet())
                         .build().toUriString();
                 getRedirectStrategy().sendRedirect(request, response, errorUrl);
                 return;
@@ -80,7 +78,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             
             // Get user from database (OAuth2UserService should have created it)
             logger.info("Looking for user in database with email: {}", email);
-            Optional<User> userOptional = userRepository.findByEmail(email);
+            Optional<User> userOptional = userRepository.findByEmailIgnoreCase(email);
             
             // If user doesn't exist, create it here (fallback if OAuth2UserService didn't create it)
             if (userOptional.isEmpty()) {
@@ -95,6 +93,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                     newUser.setSex("Unknown"); // Default sex
                     newUser.setPassword(passwordEncoder.encode("OAUTH2_USER_" + System.currentTimeMillis()));
                     newUser.setRole("USER"); // Default role
+                    newUser.setStatus("ACTIVE"); // OAuth2 email is already verified by provider
                     newUser = userRepository.save(newUser);
                     userRepository.flush();
                     logger.info("Created new user with email: {}, ID: {}", newUser.getEmail(), newUser.getId());
