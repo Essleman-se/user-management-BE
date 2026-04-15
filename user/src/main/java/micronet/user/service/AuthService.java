@@ -44,7 +44,7 @@ public class AuthService {
     @Autowired
     private EmailService emailService;
 
-    public AuthResponseDTO register(RegisterRequestDTO registerRequest) {
+    public AuthResponseDTO register(RegisterRequestDTO registerRequest, String frontendBaseUrl) {
         // Check if user already exists
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
             throw new RuntimeException("Email already exists");
@@ -67,7 +67,7 @@ public class AuthService {
         verificationTokenRepository.save(token);
 
         // Send verification email asynchronously (non-blocking)
-        emailService.sendVerificationEmailAsync(savedUser.getEmail(), verificationToken);
+        emailService.sendVerificationEmailAsync(savedUser.getEmail(), verificationToken, frontendBaseUrl);
 
         // Return response without JWT token (user needs to verify email first)
         // Token will be null, indicating user needs to verify
@@ -127,7 +127,7 @@ public class AuthService {
         verificationTokenRepository.save(verificationToken);
     }
 
-    public void resendVerificationEmail(String email) {
+    public void resendVerificationEmail(String email, String frontendBaseUrl) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Email address not found"));
 
@@ -144,7 +144,7 @@ public class AuthService {
         verificationTokenRepository.save(token);
 
         // Send verification email asynchronously
-        emailService.sendVerificationEmailAsync(user.getEmail(), verificationToken);
+        emailService.sendVerificationEmailAsync(user.getEmail(), verificationToken, frontendBaseUrl);
     }
 }
 

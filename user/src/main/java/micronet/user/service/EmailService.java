@@ -24,15 +24,22 @@ public class EmailService {
     private boolean mailEnabled;
 
     public void sendVerificationEmail(String to, String token) {
+        sendVerificationEmail(to, token, frontendUrl);
+    }
+
+    public void sendVerificationEmail(String to, String token, String frontendBaseUrl) {
+        String resolvedFrontendUrl = (frontendBaseUrl == null || frontendBaseUrl.isBlank())
+                ? frontendUrl
+                : frontendBaseUrl;
+        String verificationUrl = buildVerificationUrl(resolvedFrontendUrl, token);
+
         if (!mailEnabled || mailSender == null) {
             logger.warn("Email service is disabled or not configured. Verification email would be sent to: {}", to);
-            logger.info("Verification link: {}/verify-email?token={}", frontendUrl, token);
+            logger.info("Verification link: {}", verificationUrl);
             return;
         }
 
         try {
-            String verificationUrl = frontendUrl + "/verify-email?token=" + token;
-            
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(to);
             message.setSubject("Verify Your Email Address");
@@ -66,11 +73,21 @@ public class EmailService {
      */
     @Async
     public void sendVerificationEmailAsync(String to, String token) {
+        sendVerificationEmailAsync(to, token, frontendUrl);
+    }
+
+    @Async
+    public void sendVerificationEmailAsync(String to, String token, String frontendBaseUrl) {
         try {
-            sendVerificationEmail(to, token);
+            sendVerificationEmail(to, token, frontendBaseUrl);
         } catch (Exception e) {
             logger.error("Background send of verification email failed for: {}. Error: {}", to, e.getMessage(), e);
         }
+    }
+
+    private String buildVerificationUrl(String frontendBaseUrl, String token) {
+        String base = frontendBaseUrl.endsWith("/") ? frontendBaseUrl.substring(0, frontendBaseUrl.length() - 1) : frontendBaseUrl;
+        return base + "/verify-email?token=" + token;
     }
 }
 

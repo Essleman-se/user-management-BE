@@ -2,6 +2,7 @@ package micronet.user.config;
 
 import micronet.user.filter.JwtAuthenticationFilter;
 import micronet.user.handler.OAuth2AuthenticationSuccessHandler;
+import micronet.user.oauth2.OAuth2ReturnUrlCookieFilter;
 import micronet.user.service.OAuth2UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +13,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -33,9 +35,13 @@ public class SecurityConfig {
     @Autowired
     private CorsConfigurationSource corsConfigurationSource;
 
+    @Autowired
+    private OAuth2ReturnUrlCookieFilter oAuth2ReturnUrlCookieFilter;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .addFilterBefore(oAuth2ReturnUrlCookieFilter, OAuth2AuthorizationRequestRedirectFilter.class)
             .cors(cors -> cors.configurationSource(corsConfigurationSource)) // Enable CORS
             .csrf(csrf -> csrf.disable()) // Disable CSRF for REST API
             .authorizeHttpRequests(auth -> auth
