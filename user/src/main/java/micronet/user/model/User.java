@@ -10,27 +10,27 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @Column(nullable = false, length = 100)
-    private String name;
-    
-    @Column(nullable = false)
-    private Integer age;
-    
-    @Column(nullable = false, length = 10)
-    private String sex;
-    
+
+    @Column(name = "first_name", nullable = false, length = 100)
+    private String firstName;
+
+    @Column(name = "last_name", nullable = false, length = 100)
+    private String lastName;
+
     @Column(nullable = false, unique = true, length = 100)
     private String email;
-    
+
+    @Column(nullable = false, length = 30)
+    private String phone;
+
     @Column(nullable = false, length = 255)
     private String password;
-    
+
     @Column(nullable = false, length = 20)
-    private String role = "USER"; // Default role is USER
-    
+    private String role = "USER";
+
     @Column(nullable = false, length = 20)
-    private String status = "PENDING"; // Default status is PENDING (PENDING, ACTIVE, SUSPENDED)
+    private String status = "PENDING";
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -42,29 +42,9 @@ public class User {
         }
     }
 
-    // Constructors
     public User() {
     }
 
-    public User(Long id, String name, Integer age, String sex, String email) {
-        this.id = id;
-        this.name = name;
-        this.age = age;
-        this.sex = sex;
-        this.email = email;
-    }
-
-    public User(Long id, String name, Integer age, String sex, String email, String password, String role) {
-        this.id = id;
-        this.name = name;
-        this.age = age;
-        this.sex = sex;
-        this.email = email;
-        this.password = password;
-        this.role = role;
-    }
-
-    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -73,28 +53,20 @@ public class User {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public Integer getAge() {
-        return age;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setAge(Integer age) {
-        this.age = age;
-    }
-
-    public String getSex() {
-        return sex;
-    }
-
-    public void setSex(String sex) {
-        this.sex = sex;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getEmail() {
@@ -103,6 +75,14 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public String getPassword() {
@@ -137,4 +117,3 @@ public class User {
         this.createdAt = createdAt;
     }
 }
-

@@ -1,63 +1,49 @@
 package micronet.user.dto;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class UserRequestDTO {
-    
-    @NotBlank(message = "Name is required")
-    @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
-    private String name;
-    
-    @NotNull(message = "Age is required")
-    @Min(value = 1, message = "Age must be at least 1")
-    private Integer age;
-    
-    @NotBlank(message = "Sex is required")
-    @Size(max = 10, message = "Sex must not exceed 10 characters")
-    private String sex;
-    
+
+    @NotBlank(message = "First name is required")
+    @Size(min = 1, max = 100, message = "First name must be between 1 and 100 characters")
+    private String firstName;
+
+    @NotBlank(message = "Last name is required")
+    @Size(min = 1, max = 100, message = "Last name must be between 1 and 100 characters")
+    private String lastName;
+
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be valid")
     private String email;
 
-    // Constructors
+    @NotBlank(message = "Phone is required")
+    @Pattern(regexp = "^[+]?[0-9\\s\\-()]{7,20}$", message = "Phone must be a valid number (7–20 characters)")
+    private String phone;
+
+    /** Optional: set when creating a user or changing password via API */
+    @Size(min = 6, message = "Password must be at least 6 characters when provided")
+    private String password;
+
     public UserRequestDTO() {
     }
 
-    public UserRequestDTO(String name, Integer age, String sex, String email) {
-        this.name = name;
-        this.age = age;
-        this.sex = sex;
-        this.email = email;
+    public String getFirstName() {
+        return firstName;
     }
 
-    // Getters and Setters
-    public String getName() {
-        return name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getLastName() {
+        return lastName;
     }
 
-    public Integer getAge() {
-        return age;
-    }
-
-    public void setAge(Integer age) {
-        this.age = age;
-    }
-
-    public String getSex() {
-        return sex;
-    }
-
-    public void setSex(String sex) {
-        this.sex = sex;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getEmail() {
@@ -66,5 +52,21 @@ public class UserRequestDTO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

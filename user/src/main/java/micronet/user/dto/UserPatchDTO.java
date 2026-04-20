@@ -1,50 +1,40 @@
 package micronet.user.dto;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class UserPatchDTO {
-    
-    @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
-    private String name;
-    
-    @Min(value = 1, message = "Age must be at least 1")
-    private Integer age;
-    
-    @Size(max = 10, message = "Sex must not exceed 10 characters")
-    private String sex;
-    
+
+    @Size(min = 1, max = 100, message = "First name must be between 1 and 100 characters")
+    private String firstName;
+
+    @Size(min = 1, max = 100, message = "Last name must be between 1 and 100 characters")
+    private String lastName;
+
     @Email(message = "Email must be valid")
     private String email;
 
-    // Constructors
+    @Pattern(regexp = "^[+]?[0-9\\s\\-()]{7,20}$", message = "Phone must be a valid number (7–20 characters)")
+    private String phone;
+
     public UserPatchDTO() {
     }
 
-    // Getters and Setters
-    public String getName() {
-        return name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public Integer getAge() {
-        return age;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setAge(Integer age) {
-        this.age = age;
-    }
-
-    public String getSex() {
-        return sex;
-    }
-
-    public void setSex(String sex) {
-        this.sex = sex;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getEmail() {
@@ -53,5 +43,13 @@ public class UserPatchDTO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 }

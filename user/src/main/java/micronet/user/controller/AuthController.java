@@ -23,6 +23,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO registerRequest, HttpServletRequest request) {
+        System.out.println("Register request: " + registerRequest);
         try {
             String frontendBaseUrl = resolveFrontendBaseUrl(request);
             AuthResponseDTO response = authService.register(registerRequest, frontendBaseUrl);

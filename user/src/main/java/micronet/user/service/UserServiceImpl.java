@@ -7,8 +7,11 @@ import micronet.user.exception.ResourceNotFoundException;
 import micronet.user.mapper.UserMapper;
 import micronet.user.model.User;
 import micronet.user.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -17,6 +20,9 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -48,19 +54,29 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDTO createUser(UserRequestDTO userRequestDTO) {
         User user = UserMapper.toEntity(userRequestDTO);
+        if (StringUtils.hasText(userRequestDTO.getPassword())) {
+            user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
+        } else {
+            user.setPassword(passwordEncoder.encode("TEMP_" + System.currentTimeMillis()));
+        }
         User savedUser = userRepository.save(user);
         return UserMapper.toResponseDTO(savedUser);
     }
 
     @Override
     public UserResponseDTO updateUser(Long id, UserRequestDTO userRequestDTO) {
-        // Check if user exists
-        userRepository.findById(id)
+        User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
-        
-        User userToUpdate = UserMapper.toEntity(userRequestDTO);
-        userToUpdate.setId(id);
-        User updatedUser = userRepository.save(userToUpdate);
+
+        existingUser.setFirstName(userRequestDTO.getFirstName());
+        existingUser.setLastName(userRequestDTO.getLastName());
+        existingUser.setEmail(userRequestDTO.getEmail());
+        existingUser.setPhone(userRequestDTO.getPhone());
+        if (StringUtils.hasText(userRequestDTO.getPassword())) {
+            existingUser.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
+        }
+
+        User updatedUser = userRepository.save(existingUser);
         return UserMapper.toResponseDTO(updatedUser);
     }
 
@@ -82,5 +98,3 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(id);
     }
 }
-
-

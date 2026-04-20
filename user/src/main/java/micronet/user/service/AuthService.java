@@ -45,17 +45,20 @@ public class AuthService {
     private EmailService emailService;
 
     public AuthResponseDTO register(RegisterRequestDTO registerRequest, String frontendBaseUrl) {
+        if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
+            throw new RuntimeException("Password and re-enter password do not match");
+        }
+
         // Check if user already exists
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
 
-        // Create new user with PENDING status (but don't save yet)
         User user = new User();
-        user.setName(registerRequest.getName());
-        user.setAge(registerRequest.getAge());
-        user.setSex(registerRequest.getSex());
-        user.setEmail(registerRequest.getEmail());
+        user.setFirstName(registerRequest.getFirstName().trim());
+        user.setLastName(registerRequest.getLastName().trim());
+        user.setEmail(registerRequest.getEmail().trim());
+        user.setPhone(registerRequest.getPhone().trim());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setRole(registerRequest.getRole() != null ? registerRequest.getRole() : "USER");
         user.setStatus("PENDING"); // Set status to PENDING until email is verified

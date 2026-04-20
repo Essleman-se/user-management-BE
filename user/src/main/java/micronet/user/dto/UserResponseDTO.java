@@ -2,26 +2,15 @@ package micronet.user.dto;
 
 public class UserResponseDTO {
     private Long id;
-    private String name;
-    private Integer age;
-    private String sex;
+    private String firstName;
+    private String lastName;
     private String email;
-    
+    private String phone;
     private String status;
 
-    // Constructors
     public UserResponseDTO() {
     }
 
-    public UserResponseDTO(Long id, String name, Integer age, String sex, String email) {
-        this.id = id;
-        this.name = name;
-        this.age = age;
-        this.sex = sex;
-        this.email = email;
-    }
-
-    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -30,28 +19,20 @@ public class UserResponseDTO {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public Integer getAge() {
-        return age;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setAge(Integer age) {
-        this.age = age;
-    }
-
-    public String getSex() {
-        return sex;
-    }
-
-    public void setSex(String sex) {
-        this.sex = sex;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getEmail() {
@@ -60,6 +41,14 @@ public class UserResponseDTO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public String getStatus() {

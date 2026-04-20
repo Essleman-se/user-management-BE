@@ -14,12 +14,12 @@ public class UserMapper {
         if (dto == null) {
             return null;
         }
-        
+
         User user = new User();
-        user.setName(dto.getName());
-        user.setAge(dto.getAge());
-        user.setSex(dto.getSex());
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
         user.setEmail(dto.getEmail());
+        user.setPhone(dto.getPhone());
         return user;
     }
 
@@ -27,13 +27,13 @@ public class UserMapper {
         if (entity == null) {
             return null;
         }
-        
+
         UserResponseDTO dto = new UserResponseDTO();
         dto.setId(entity.getId());
-        dto.setName(entity.getName());
-        dto.setAge(entity.getAge());
-        dto.setSex(entity.getSex());
+        dto.setFirstName(entity.getFirstName());
+        dto.setLastName(entity.getLastName());
         dto.setEmail(entity.getEmail());
+        dto.setPhone(entity.getPhone());
         dto.setStatus(entity.getStatus());
         return dto;
     }
@@ -47,23 +47,22 @@ public class UserMapper {
                 .collect(Collectors.toList());
     }
 
-    // Helper method to merge UserPatchDTO into existing User entity (for PATCH)
     public static void mergeUserPatch(User user, UserPatchDTO dto) {
         if (dto == null || user == null) {
             return;
         }
-        
-        if (dto.getName() != null) {
-            user.setName(dto.getName());
+
+        if (dto.getFirstName() != null) {
+            user.setFirstName(dto.getFirstName());
         }
-        if (dto.getAge() != null) {
-            user.setAge(dto.getAge());
-        }
-        if (dto.getSex() != null) {
-            user.setSex(dto.getSex());
+        if (dto.getLastName() != null) {
+            user.setLastName(dto.getLastName());
         }
         if (dto.getEmail() != null) {
             user.setEmail(dto.getEmail());
+        }
+        if (dto.getPhone() != null) {
+            user.setPhone(dto.getPhone());
         }
     }
 }

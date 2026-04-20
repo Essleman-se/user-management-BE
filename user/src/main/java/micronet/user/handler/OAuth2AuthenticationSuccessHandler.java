@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import micronet.user.model.User;
 import micronet.user.repository.UserRepository;
 import micronet.user.service.CustomUserDetailsService;
+import micronet.user.util.UserProfileUtils;
 import micronet.user.util.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.slf4j.Logger;
@@ -87,10 +88,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                     User newUser = new User();
                     newUser.setEmail(email);
                     Object nameObj = attributes.get("name");
-                    String name = nameObj != null ? nameObj.toString() : "OAuth2 User";
-                    newUser.setName(name);
-                    newUser.setAge(25); // Default age
-                    newUser.setSex("Unknown"); // Default sex
+                    String displayName = nameObj != null ? nameObj.toString() : null;
+                    UserProfileUtils.applyDisplayName(newUser, displayName != null ? displayName : "OAuth2 User");
+                    newUser.setPhone("0000000000");
                     newUser.setPassword(passwordEncoder.encode("OAUTH2_USER_" + System.currentTimeMillis()));
                     newUser.setRole("USER"); // Default role
                     newUser.setStatus("ACTIVE"); // OAuth2 email is already verified by provider

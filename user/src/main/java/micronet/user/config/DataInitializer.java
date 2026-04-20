@@ -17,27 +17,25 @@ public class DataInitializer {
     @Bean
     CommandLineRunner initDatabase(UserRepository userRepository) {
         return args -> {
-            // Only initialize if database is empty
             if (userRepository.count() == 0) {
-                // Seed data with 5 initial records (1 admin, 4 regular users)
-                userRepository.save(createUser("John Doe", 25, "Male", "admin@example.com", "admin123", "ADMIN"));
-                userRepository.save(createUser("Jane Smith", 30, "Female", "jane.smith@example.com", "password123", "USER"));
-                userRepository.save(createUser("Bob Johnson", 28, "Male", "bob.johnson@example.com", "password123", "USER"));
-                userRepository.save(createUser("Alice Williams", 35, "Female", "alice.williams@example.com", "password123", "USER"));
-                userRepository.save(createUser("Charlie Brown", 22, "Male", "charlie.brown@example.com", "password123", "USER"));
+                userRepository.save(createUser("John", "Doe", "+1555000001", "admin@example.com", "admin123", "ADMIN"));
+                userRepository.save(createUser("Jane", "Smith", "+1555000002", "jane.smith@example.com", "password123", "USER"));
+                userRepository.save(createUser("Bob", "Johnson", "+1555000003", "bob.johnson@example.com", "password123", "USER"));
+                userRepository.save(createUser("Alice", "Williams", "+1555000004", "alice.williams@example.com", "password123", "USER"));
+                userRepository.save(createUser("Charlie", "Brown", "+1555000005", "charlie.brown@example.com", "password123", "USER"));
             }
         };
     }
 
-    private User createUser(String name, Integer age, String sex, String email, String password, String role) {
+    private User createUser(String firstName, String lastName, String phone, String email, String password, String role) {
         User user = new User();
-        user.setName(name);
-        user.setAge(age);
-        user.setSex(sex);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setPhone(phone);
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
         user.setRole(role);
-        user.setStatus("ACTIVE"); // Set seed users to ACTIVE for testing purposes
+        user.setStatus("ACTIVE");
         return user;
     }
 }
