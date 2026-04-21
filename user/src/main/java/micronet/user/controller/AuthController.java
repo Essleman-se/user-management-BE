@@ -1,8 +1,10 @@
 package micronet.user.controller;
 
 import micronet.user.dto.AuthResponseDTO;
+import micronet.user.dto.ForgotPasswordRequestDTO;
 import micronet.user.dto.LoginRequestDTO;
 import micronet.user.dto.RegisterRequestDTO;
+import micronet.user.dto.ResetPasswordRequestDTO;
 import micronet.user.exception.ResourceNotFoundException;
 import micronet.user.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,6 +48,30 @@ public class AuthController {
     public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
         AuthResponseDTO response = authService.login(loginRequest);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO request,
+                                                              HttpServletRequest httpRequest) {
+        String frontendBaseUrl = resolveFrontendBaseUrl(httpRequest);
+        authService.forgotPassword(request.getEmail(), frontendBaseUrl);
+        Map<String, String> response = new java.util.HashMap<>();
+        response.put("message", "If an account exists for this email, we sent password reset instructions.");
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordRequestDTO request) {
+        try {
+            authService.resetPassword(request);
+            Map<String, String> response = new java.util.HashMap<>();
+            response.put("message", "Password has been reset. You can log in with your new password.");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, String> response = new java.util.HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
     @GetMapping("/verify-email")

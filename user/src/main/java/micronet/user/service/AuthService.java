@@ -3,9 +3,12 @@ package micronet.user.service;
 import micronet.user.dto.AuthResponseDTO;
 import micronet.user.dto.LoginRequestDTO;
 import micronet.user.dto.RegisterRequestDTO;
+import micronet.user.dto.ResetPasswordRequestDTO;
 import micronet.user.exception.ResourceNotFoundException;
+import micronet.user.model.PasswordResetToken;
 import micronet.user.model.User;
 import micronet.user.model.VerificationToken;
+import micronet.user.repository.PasswordResetTokenRepository;
 import micronet.user.repository.UserRepository;
 import micronet.user.repository.VerificationTokenRepository;
 import micronet.user.util.JwtUtil;
@@ -40,6 +43,9 @@ public class AuthService {
 
     @Autowired
     private VerificationTokenRepository verificationTokenRepository;
+
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Autowired
     private EmailService emailService;
@@ -148,6 +154,55 @@ public class AuthService {
 
         // Send verification email asynchronously
         emailService.sendVerificationEmailAsync(user.getEmail(), verificationToken, frontendBaseUrl);
+    }
+
+    /**
+     * Issues a reset link only for ACTIVE accounts. Always behaves as success to avoid email enumeration.
+     */
+    public void forgotPassword(String email, String frontendBaseUrl) {
+        String normalized = email == null ? "" : email.trim();
+        if (normalized.isEmpty()) {
+            return;
+        }
+
+        userRepository.findByEmailIgnoreCase(normalized).ifPresent(user -> {
+            if (!"ACTIVE".equals(user.getStatus())) {
+                return;
+            }
+            passwordResetTokenRepository.deleteByUserId(user.getId());
+            String rawToken = UUID.randomUUID().toString();
+            PasswordResetToken resetToken = new PasswordResetToken(rawToken, user);
+            passwordResetTokenRepository.save(resetToken);
+            emailService.sendPasswordResetEmailAsync(user.getEmail(), rawToken, frontendBaseUrl);
+        });
+    }
+
+    public void resetPassword(ResetPasswordRequestDTO request) {
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException("Password and re-enter password do not match");
+        }
+
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.getToken().trim())
+                .orElseThrow(() -> new RuntimeException("Invalid or expired password reset link"));
+
+        if (resetToken.isUsed()) {
+            throw new RuntimeException("This password reset link has already been used");
+        }
+
+        if (resetToken.isExpired()) {
+            throw new RuntimeException("This password reset link has expired");
+        }
+
+        User user = resetToken.getUser();
+        if (!"ACTIVE".equals(user.getStatus())) {
+            throw new RuntimeException("Account is not active; you cannot reset the password");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userRepository.save(user);
+
+        resetToken.setUsed(true);
+        passwordResetTokenRepository.save(resetToken);
     }
 }
 

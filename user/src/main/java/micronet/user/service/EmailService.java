@@ -86,8 +86,69 @@ public class EmailService {
     }
 
     private String buildVerificationUrl(String frontendBaseUrl, String token) {
-        String base = frontendBaseUrl.endsWith("/") ? frontendBaseUrl.substring(0, frontendBaseUrl.length() - 1) : frontendBaseUrl;
+        String base = normalizeBase(frontendBaseUrl);
         return base + "/verify-email?token=" + token;
+    }
+
+    public void sendPasswordResetEmail(String to, String token) {
+        sendPasswordResetEmail(to, token, frontendUrl);
+    }
+
+    public void sendPasswordResetEmail(String to, String token, String frontendBaseUrl) {
+        String resolvedFrontendUrl = (frontendBaseUrl == null || frontendBaseUrl.isBlank())
+                ? frontendUrl
+                : frontendBaseUrl;
+        String resetUrl = buildPasswordResetUrl(resolvedFrontendUrl, token);
+
+        if (!mailEnabled || mailSender == null) {
+            logger.warn("Email service is disabled or not configured. Password reset email would be sent to: {}", to);
+            logger.info("Password reset link: {}", resetUrl);
+            return;
+        }
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject("Reset your password");
+            message.setText("You requested a password reset. Click the link below to choose a new password:\n\n"
+                    + resetUrl
+                    + "\n\nThis link expires in 1 hour. If you did not request this, you can ignore this email.");
+            mailSender.send(message);
+            logger.info("Password reset email sent to: {}", to);
+        } catch (org.springframework.mail.MailException e) {
+            logger.error("Failed to send password reset email to: {}. Error: {}", to, e.getMessage());
+            String errorMessage = e.getMessage();
+            if (errorMessage != null && (errorMessage.contains("550")
+                    || errorMessage.contains("invalid")
+                    || errorMessage.contains("not found")
+                    || errorMessage.contains("does not exist"))) {
+                throw new RuntimeException("Email address not found or invalid", e);
+            }
+            throw new RuntimeException("Failed to send password reset email. Please try again.", e);
+        } catch (Exception e) {
+            logger.error("Failed to send password reset email to: {}", to, e);
+            throw new RuntimeException("Email address not found or invalid. Please check your email and try again.", e);
+        }
+    }
+
+    @Async
+    public void sendPasswordResetEmailAsync(String to, String token, String frontendBaseUrl) {
+        try {
+            sendPasswordResetEmail(to, token, frontendBaseUrl);
+        } catch (Exception e) {
+            logger.error("Background send of password reset email failed for: {}. Error: {}", to, e.getMessage(), e);
+        }
+    }
+
+    private String buildPasswordResetUrl(String frontendBaseUrl, String token) {
+        String base = normalizeBase(frontendBaseUrl);
+        return base + "/reset-password?token=" + token;
+    }
+
+    private static String normalizeBase(String frontendBaseUrl) {
+        return frontendBaseUrl.endsWith("/")
+                ? frontendBaseUrl.substring(0, frontendBaseUrl.length() - 1)
+                : frontendBaseUrl;
     }
 }
 
