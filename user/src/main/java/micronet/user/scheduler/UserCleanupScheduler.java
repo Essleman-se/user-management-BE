@@ -6,6 +6,7 @@ import micronet.user.repository.VerificationTokenRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,14 +16,15 @@ import java.util.List;
 
 /**
  * Scheduler that removes users who registered but did not verify their email
- * within one hour. Runs every 15 minutes.
+ * after a configurable retention window. Runs every 15 minutes.
  */
 @Component
 public class UserCleanupScheduler {
 
     private static final Logger logger = LoggerFactory.getLogger(UserCleanupScheduler.class);
 
-    private static final int UNVERIFIED_USER_RETENTION_HOURS = 1;
+    @Value("${app.unverified-user-retention-hours:24}")
+    private int unverifiedUserRetentionHours;
 
     @Autowired
     private UserRepository userRepository;
@@ -33,7 +35,7 @@ public class UserCleanupScheduler {
     @Scheduled(fixedRate = 15 * 60 * 1000) // Every 15 minutes
     @Transactional
     public void cleanupUnverifiedUsers() {
-        LocalDateTime cutoff = LocalDateTime.now().minusHours(UNVERIFIED_USER_RETENTION_HOURS);
+        LocalDateTime cutoff = LocalDateTime.now().minusHours(unverifiedUserRetentionHours);
         List<User> toRemove = userRepository.findByStatusAndCreatedAtBefore("PENDING", cutoff);
 
         if (toRemove.isEmpty()) {

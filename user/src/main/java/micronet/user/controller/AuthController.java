@@ -2,9 +2,11 @@ package micronet.user.controller;
 
 import micronet.user.dto.AuthResponseDTO;
 import micronet.user.dto.ForgotPasswordRequestDTO;
+import micronet.user.dto.LoginChallengeResponseDTO;
 import micronet.user.dto.LoginRequestDTO;
 import micronet.user.dto.RegisterRequestDTO;
 import micronet.user.dto.ResetPasswordRequestDTO;
+import micronet.user.dto.VerifyLoginCodeRequestDTO;
 import micronet.user.exception.ResourceNotFoundException;
 import micronet.user.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,8 +47,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
-        AuthResponseDTO response = authService.login(loginRequest);
+    public ResponseEntity<LoginChallengeResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
+        LoginChallengeResponseDTO response = authService.login(loginRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/login/verify-code")
+    public ResponseEntity<AuthResponseDTO> verifyLoginCode(@Valid @RequestBody VerifyLoginCodeRequestDTO request) {
+        AuthResponseDTO response = authService.verifyLoginCode(request);
         return ResponseEntity.ok(response);
     }
 

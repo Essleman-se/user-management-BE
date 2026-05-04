@@ -2,6 +2,7 @@ package micronet.user.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 public class LoginRequestDTO {
     
@@ -11,6 +12,9 @@ public class LoginRequestDTO {
     
     @NotBlank(message = "Password is required")
     private String password;
+
+    @Pattern(regexp = "^(EMAIL|PHONE)?$", message = "Channel must be EMAIL or PHONE")
+    private String channel = "EMAIL";
 
     // Constructors
     public LoginRequestDTO() {
@@ -36,6 +40,14 @@ public class LoginRequestDTO {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getChannel() {
+        return channel;
+    }
+
+    public void setChannel(String channel) {
+        this.channel = channel;
     }
 }
 

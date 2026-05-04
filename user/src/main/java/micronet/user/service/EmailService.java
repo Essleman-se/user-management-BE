@@ -140,6 +140,39 @@ public class EmailService {
         }
     }
 
+    public void sendLoginVerificationCodeEmail(String to, String code) {
+        if (!mailEnabled || mailSender == null) {
+            logger.warn("Email service is disabled or not configured. Login verification code for {} is {}", to, code);
+            return;
+        }
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject("Your login verification code");
+            message.setText("Use this code to complete your login: " + code + "\n\nThis code expires in 5 minutes.");
+            mailSender.send(message);
+            logger.info("Login verification code email sent to: {}", to);
+        } catch (Exception e) {
+            logger.error("Failed to send login verification code email to: {}", to, e);
+            throw new RuntimeException("Failed to send login verification code email", e);
+        }
+    }
+
+    @Async
+    public void sendLoginVerificationCodeEmailAsync(String to, String code) {
+        try {
+            sendLoginVerificationCodeEmail(to, code);
+        } catch (Exception e) {
+            logger.error("Background send of login verification code email failed for: {}. Error: {}", to, e.getMessage(), e);
+        }
+    }
+
+    public void sendLoginVerificationCodeToPhone(String phone, String code) {
+        // Placeholder until SMS provider integration (Twilio/AWS SNS/etc.).
+        logger.info("SMS login verification code for {} is {}", phone, code);
+    }
+
     private String buildPasswordResetUrl(String frontendBaseUrl, String token) {
         String base = normalizeBase(frontendBaseUrl);
         return base + "/reset-password?token=" + token;
